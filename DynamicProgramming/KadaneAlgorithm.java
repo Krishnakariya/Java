@@ -54,6 +54,10 @@ public class KadaneAlgorithm {
             System.out.println(maxContSum);
             sc.close();
         }
+        else
+        {
+            System.out.println("The input should be greater than 0.");
+        }
     }
 
 }

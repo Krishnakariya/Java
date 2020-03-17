@@ -29,11 +29,18 @@ public class CoinChange {
     public static int change(@Positive int[] coins,@NonNegative int amount) {
 
         int[] combinations =(int @MinLen(1) []) new int[amount + 1];
-        combinations[0] = 1; /* This Line gives cast.unsafe warning because the compiler is unable to statically verify that the length of the array "combinations" is greater than 1*/
+        /* Here, the length of the array combinations is positive, as amount will be non-negative. 
+        But the checker is unable to verify it statically. So, I have casted the array to @MinLen(1). 
+        The checker raises a warning cast.unsafe, but it can be suppressed as the cast is safe and correct.
+        The need of the above cast is due to the below line where 0th index of combinations is accessed. */
+        combinations[0] = 1; 
 
-        for (@Positive int coin : coins) {
+        for (int coin : coins) {
             for (int i = coin; i < amount + 1; i++) {
-                combinations[i] += combinations[(@Positive int)(i - coin)];
+                /* Here, the checker cannot statically verify that the i-coin will always be non-negative.
+                So, it is safe to cast the i-coin to @NonNegative int. 
+                The below line gives cast.unsafe warning but the cast is safe so the warning can be suppressed.*/
+                combinations[i] += combinations[(@NonNegative int)(i - coin)];
             }
             // Uncomment the below line to see the state of combinations for each coin
             // printAmount(combinations);
@@ -51,8 +58,12 @@ public class CoinChange {
      **/
     @SuppressWarnings("cast.unsafe")
     public static int minimumCoins(@Positive int[] coins,@NonNegative int amount) {
-        //minimumCoins[i] will store the minimum coins needed for amount i
+
         int[] minimumCoins = (int @MinLen(1) [])new int[amount + 1];
+        /* Here, the length of the array minimumCoins is positive, as amount will be non-negative. 
+        But the checker is unable to verify it statically. So, I have casted the array to @MinLen(1). 
+        The checker raises a warning cast.unsafe, but it can be suppressed as the cast is safe and correct.
+        The need of the above cast is due to the below line where 0th index of minimumCoins is accessed. */
 
         minimumCoins[0] = 0;/* This Line gives cast.unsafe warning because the compiler is unable to statically verify that the length of the array "minimumCoins" is greater than 1*/
 

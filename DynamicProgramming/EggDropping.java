@@ -19,26 +19,44 @@ public class EggDropping {
         }
 
         // j trials for only 1 egg
-
-        for (int j = 1; j <= m; j++)
-            eggFloor[1][(@IndexFor("eggFloor[1]") int)j] = j;
+        /* In the below for loop at lines 24 and 30, the warning cast.unsafe is raised. 
+           The warning is raised because the checker is not able to statically verify that the dimension of the array 
+           eggfloor is n+1 and m+1. 
+           But, it can be easily seen that the cast is safe. 
+        */
+        for (int j = 1; j <= (@LTLengthOf("eggFloor[1]") int)m; j++)
+            eggFloor[1][j] = j;
 
         // Using bottom-up approach in DP
 
         for (int i = 2; i <= n; i++) {
-            for (int j = 2; j <= m; j++) {
-                eggFloor[i][(@IndexFor("eggFloor[i]") int)j] = Integer.MAX_VALUE;
+            for (int j = 2; j <= (@LTLengthOf("eggFloor[i]") int)m; j++) {
+                eggFloor[i][j] = Integer.MAX_VALUE;
                 for (x = 1; x <= j; x++) {
-                    /* This Line gives array.access.unsafe.high, expression.unparsable.type.invalid warning because the compiler is unable to statically verify that i-1 is less than length of the array "eggFloor"*/
-                    result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@IndexFor("eggFloor[i]") @NonNegative int)(j - x)]);
+                    /* The line 43 raises the below error: 
+                    EggDropping.java:33: error: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: eggFloor[i-1]; 
+                    error: Invalid 'eggFloor[i' because is an invalid expression]
+                    result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@NonNegative int)(j - x)]);
+                    Therefore the error is suppressed. */
+                    
+                    // The warning cast.unsafe is suppressed due to the same reason as for the "for loops".
+                    
+                    /* The error array.access.unsafe.high has below message which cannot be resolved:
+                    EggDropping.java:33: error: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
+                                        result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@NonNegative int)(j - x)]);
+                                                                              ^
+                      found   : @LTLengthOf(value="[error for expression: eggFloor[i-1]; error: Invalid 'eggFloor[i' because is an invalid expression]") int
+                      required: @IndexFor("eggFloor[?]") or @LTLengthOf("eggFloor[?]") -- an integer less than eggFloor[?]'s length */
+                    result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@NonNegative int)(j - x)]);
 
                     // choose min of all values for particular x
-                    if (result < eggFloor[i][(@IndexFor("eggFloor[i]") int)j])
-                        eggFloor[i][(@IndexFor("eggFloor[i]") int)j] = result;
+                    if (result < eggFloor[i][j])
+                        eggFloor[i][j] = result;
                 }
             }
         }
-
+        /* The below line give cast.unsafe warning as the checker is unable to verify statically that
+        the dimension of eggFloor array is (n,m).*/
         return eggFloor[n][(@IndexFor("eggFloor[n]") int)m];
     }
 
