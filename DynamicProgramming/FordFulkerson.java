@@ -30,15 +30,12 @@ public class FordFulkerson {
 
         System.out.println("Max capacity in networkFlow : " + networkFlow(0, 5));
     }
-    @SuppressWarnings({"cast.unsafe", "array.access.unsafe.high"})
-    /* The cast.unsafe warning is raised for the same reasons as in other files.*/
-    /* The error array.access.unsafe.high is raised at some lines in the following way which cannot be resolved. 
-    FordFulkerson.java:62: error: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
-                amount = Math.min(capacity[(@NonNegative @IndexFor("DynamicProgramming.FordFulkerson.capacity") int)parent.get(p)][p] - flow[(@NonNegative @IndexFor("DynamicProgramming.FordFulkerson.flow") int)parent.get(p)][p], amount);
-                                                                                                                                   ^
-        found   : @UpperBoundUnknown int
-        required: @IndexFor("DynamicProgramming.FordFulkerson.capacity[?]") or @LTLengthOf("DynamicProgramming.FordFulkerson.capacity[?]") -- an integer less than DynamicProgramming.FordFulkerson.capacity[?]'s length
-    */
+    /* The cast.unsafe warning is raised in for loops at line 65 and 72. The warning is due to casting @NonNegative to p. 
+    The checker cannot statically verify that the variable p is Non-negative and it is difficult to verify that. */
+    /* The array.access.unsafe.high warning is raised at line 76. This is false positive as the variable p will have value less than V (size of flow) 
+    This also could not be proved statically.*/
+    /* I tried to write the below warnings in front of method declarations but still the warnings where raised.*/
+    @SuppressWarnings({"array.access.unsafe.high", "cast.unsafe"})
     private static int networkFlow(@NonNegative int source,@NonNegative int sink) {
         flow = new int[V][V];
         int totalFlow = 0;
@@ -50,9 +47,16 @@ public class FordFulkerson {
             parent.set(source, source);
             q.add(source);
             while (!q.isEmpty() && parent.get(sink) == -1) {
-                int here = (@LTLengthOf(value={"DynamicProgramming.FordFulkerson.capacity", "DynamicProgramming.FordFulkerson.flow"}) int)q.peek();
+                /* In the below line, the warning assignment.type.incompatible is raised. 
+                The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                flow and capacity is (V,V). */
+                @SuppressWarnings("assignment.type.incompatible") @IndexFor(value={"DynamicProgramming.FordFulkerson.capacity", "DynamicProgramming.FordFulkerson.flow"}) int here = q.peek();
                 q.poll();
-                for (int there = 0; there < (@LTLengthOf(value={"DynamicProgramming.FordFulkerson.capacity[here]", "DynamicProgramming.FordFulkerson.flow[here]"}) int)V; ++there)
+                /* In the below line, the warning assignment.type.incompatible is raised. 
+                The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                flow and capacity is (V,V). */
+                @SuppressWarnings("assignment.type.incompatible") @IndexFor(value={"DynamicProgramming.FordFulkerson.capacity[here]", "DynamicProgramming.FordFulkerson.flow[here]"}) int len = V;
+                for (int there = 0; there < len; ++there)
                     if (capacity[here][there] - flow[here][there] > 0 && parent.get(there) == -1) {
                         q.add(there);
                         parent.set(there, here);
@@ -64,14 +68,31 @@ public class FordFulkerson {
             int amount = INF;
             String printer = "path : ";
             StringBuilder sb = new StringBuilder();
-            for (@NonNegative int p = sink; p != source; p = (@NonNegative int) parent.get((@NonNegative int )p)) {
-                amount = Math.min(capacity[(@NonNegative @IndexFor("DynamicProgramming.FordFulkerson.capacity") int)parent.get(p)][p] - flow[(@NonNegative @IndexFor("DynamicProgramming.FordFulkerson.flow") int)parent.get(p)][p], amount);
+            @NonNegative int p;
+            for (p = sink; p != source; p = (@NonNegative int) parent.get((@NonNegative int )p)) {
+                /* In the below line, the warning assignment.type.incompatible is raised. 
+                The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                flow and capacity is (V,V). */
+                @SuppressWarnings("assignment.type.incompatible") @IndexFor(value={"DynamicProgramming.FordFulkerson.capacity", "DynamicProgramming.FordFulkerson.flow"}) int tempindex = parent.get(p);
+                /* In the below line, the warning assignment.type.incompatible is raised. 
+                The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                flow and capacity is (V,V). */
+                @SuppressWarnings("assignment.type.incompatible") @IndexFor(value={"DynamicProgramming.FordFulkerson.capacity[tempindex]", "DynamicProgramming.FordFulkerson.flow[tempindex]"}) int tempindex1 = p;
+                amount = Math.min(capacity[tempindex][tempindex1] - flow[tempindex][tempindex1], amount);
                 sb.append(p + "-");
             }
             sb.append(source);
-            for (@NonNegative int p = sink; p != source; p = (@NonNegative int) parent.get((@NonNegative int )p)) {
-                flow[(@IndexFor("DynamicProgramming.FordFulkerson.flow") @NonNegative int)parent.get(p)][p] += amount;
-                flow[(@IndexFor("DynamicProgramming.FordFulkerson.flow") int)p][(@IndexFor("DynamicProgramming.FordFulkerson.flow[p]") @NonNegative int)parent.get(p)] -= amount;
+            for (p = sink; p != source; p = (@NonNegative int) parent.get((@NonNegative int )p)) {
+                /* In the below line, the warning assignment.type.incompatible is raised. 
+                The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                flow and capacity is (V,V). */
+                @SuppressWarnings("assignment.type.incompatible") @IndexFor(value={"DynamicProgramming.FordFulkerson.flow[p]", "DynamicProgramming.FordFulkerson.flow"}) int tempindex = parent.get(p);
+                /* In the below line, the warning assignment.type.incompatible is raised. 
+                The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                flow and capacity is (V,V). */                
+                @SuppressWarnings("assignment.type.incompatible") @IndexFor("DynamicProgramming.FordFulkerson.flow[tempindex]") int tempindex1 = p;
+                flow[tempindex][tempindex1] += amount;
+                flow[p][tempindex] -= amount;
             }
             totalFlow += amount;
             printer += sb.reverse() + " / max flow : " + totalFlow;

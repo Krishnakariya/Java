@@ -7,10 +7,11 @@ import org.checkerframework.checker.index.qual.*;
 public class EggDropping {
 
     // min trials with n eggs and m floors 
-    @SuppressWarnings({"cast.unsafe" , "expression.unparsable.type.invalid", "array.access.unsafe.high"})
     private static int minTrials(@Positive int n, @Positive int m) {
-        /* The below Line gives cast.unsafe warning because the compiler is unable to statically verify that the length of the array "eggFloor" and "eggFloor[i]" is greater than 1*/
-        int @MinLen(2) [] @MinLen(2) [] eggFloor = (int @MinLen(2) [] @MinLen(2) [])new int[n + 1][m + 1];
+        /* In the below line, the warning assignment.type.incompatible is raised. 
+           The warning is raised because the checker is not able to statically verify that the dimension of the array 
+           eggfloor is (n+1,m+1). */
+        @SuppressWarnings("assignment.type.incompatible") int @MinLen(2) [] @MinLen(2) [] eggFloor = new int[n + 1][m + 1];
         int result, x;
 
         for (int i = 1; i <= n; i++) {
@@ -19,35 +20,30 @@ public class EggDropping {
         }
 
         // j trials for only 1 egg
-        /* In the below for loop at lines 24 and 30, the warning cast.unsafe is raised. 
+        /* In the below line, the warning assignment.type.incompatible is raised. 
            The warning is raised because the checker is not able to statically verify that the dimension of the array 
-           eggfloor is n+1 and m+1. 
-           But, it can be easily seen that the cast is safe. 
-        */
-        for (int j = 1; j <= (@LTLengthOf("eggFloor[1]") int)m; j++)
+           eggfloor is (n+1,m+1). */
+        @SuppressWarnings("assignment.type.incompatible") @LTLengthOf("eggFloor[1]") int temp1 = m;
+        for (int j = 1; j <= temp1; j++)
             eggFloor[1][j] = j;
 
         // Using bottom-up approach in DP
 
         for (int i = 2; i <= n; i++) {
-            for (int j = 2; j <= (@LTLengthOf("eggFloor[i]") int)m; j++) {
+            /* In the below line, the warning assignment.type.incompatible is raised. 
+            The warning is raised because the checker is not able to statically verify that the dimension of the array 
+            eggfloor is (n+1,m+1). */
+            @SuppressWarnings("assignment.type.incompatible") @LTLengthOf("eggFloor[i]") int temp2 = m;
+            int tempindex2 = i-1;
+            for (int j = 2; j <= temp2; j++) {
                 eggFloor[i][j] = Integer.MAX_VALUE;
                 for (x = 1; x <= j; x++) {
-                    /* The line 43 raises the below error: 
-                    EggDropping.java:33: error: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: eggFloor[i-1]; 
-                    error: Invalid 'eggFloor[i' because is an invalid expression]
-                    result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@NonNegative int)(j - x)]);
-                    Therefore the error is suppressed. */
-                    
-                    // The warning cast.unsafe is suppressed due to the same reason as for the "for loops".
-                    
-                    /* The error array.access.unsafe.high has below message which cannot be resolved:
-                    EggDropping.java:33: error: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
-                                        result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@NonNegative int)(j - x)]);
-                                                                              ^
-                      found   : @LTLengthOf(value="[error for expression: eggFloor[i-1]; error: Invalid 'eggFloor[i' because is an invalid expression]") int
-                      required: @IndexFor("eggFloor[?]") or @LTLengthOf("eggFloor[?]") -- an integer less than eggFloor[?]'s length */
-                    result = 1 + Math.max(eggFloor[i - 1][(@IndexFor("eggFloor[i-1]") @NonNegative int)(x - 1)], eggFloor[i][(@NonNegative int)(j - x)]);
+                    /* In the below lines, the warning assignment.type.incompatible is raised. 
+                       The warning is raised because the checker is not able to statically verify that the dimension of the array 
+                       eggfloor is (n+1,m+1). */
+                    @SuppressWarnings("assignment.type.incompatible") @IndexFor("eggFloor[tempindex2]") int tempindex1 = x-1;
+                    @SuppressWarnings("assignment.type.incompatible") @IndexFor("eggFloor[i]") int tempindex3 = j-x;
+                    result = 1 + Math.max(eggFloor[tempindex2][tempindex1], eggFloor[i][tempindex3]);
 
                     // choose min of all values for particular x
                     if (result < eggFloor[i][j])
@@ -55,9 +51,11 @@ public class EggDropping {
                 }
             }
         }
-        /* The below line give cast.unsafe warning as the checker is unable to verify statically that
-        the dimension of eggFloor array is (n,m).*/
-        return eggFloor[n][(@IndexFor("eggFloor[n]") int)m];
+        /* In the below lines, the warning assignment.type.incompatible is raised. 
+           The warning is raised because the checker is not able to statically verify that the dimension of the array 
+           eggfloor is (n+1,m+1). */
+        @SuppressWarnings("assignment.type.incompatible") @IndexFor("eggFloor[n]") int tempindex4 = m;
+        return eggFloor[n][tempindex4];
     }
 
     public static void main(String args[]) {

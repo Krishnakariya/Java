@@ -25,22 +25,23 @@ public class CoinChange {
      * @param amount The amount for which we need to find the change
      *               Finds the number of combinations of change
      **/
-    @SuppressWarnings("cast.unsafe")
+    
     public static int change(@Positive int[] coins,@NonNegative int amount) {
-
-        int[] combinations =(int @MinLen(1) []) new int[amount + 1];
+    
         /* Here, the length of the array combinations is positive, as amount will be non-negative. 
-        But the checker is unable to verify it statically. So, I have casted the array to @MinLen(1). 
+        But the checker is unable to verify it statically. So, I have annotated the array to @MinLen(1). 
         The checker raises a warning cast.unsafe, but it can be suppressed as the cast is safe and correct.
-        The need of the above cast is due to the below line where 0th index of combinations is accessed. */
-        combinations[0] = 1; 
+        The need of the below annotation is due to the line 36 where 0th index of combinations is accessed. */
+        @SuppressWarnings("assignment.type.incompatible") int @MinLen(1) [] combinations = new int[amount + 1];
+        combinations[0] = 1;
 
         for (int coin : coins) {
             for (int i = coin; i < amount + 1; i++) {
                 /* Here, the checker cannot statically verify that the i-coin will always be non-negative.
                 So, it is safe to cast the i-coin to @NonNegative int. 
-                The below line gives cast.unsafe warning but the cast is safe so the warning can be suppressed.*/
-                combinations[i] += combinations[(@NonNegative int)(i - coin)];
+                The below line gives assignment.type.incompatible warning but the type is compatible so the warning can be suppressed.*/
+                @SuppressWarnings("assignment.type.incompatible") @NonNegative int temp = i - coin;
+                combinations[i] += combinations[temp];
             }
             // Uncomment the below line to see the state of combinations for each coin
             // printAmount(combinations);
@@ -56,16 +57,15 @@ public class CoinChange {
      * @param amount The amount for which we need to find the minimum number of coins.
      *               Finds the the minimum number of coins that make a given value.
      **/
-    @SuppressWarnings("cast.unsafe")
     public static int minimumCoins(@Positive int[] coins,@NonNegative int amount) {
 
-        int[] minimumCoins = (int @MinLen(1) [])new int[amount + 1];
         /* Here, the length of the array minimumCoins is positive, as amount will be non-negative. 
         But the checker is unable to verify it statically. So, I have casted the array to @MinLen(1). 
         The checker raises a warning cast.unsafe, but it can be suppressed as the cast is safe and correct.
-        The need of the above cast is due to the below line where 0th index of minimumCoins is accessed. */
+        The need of the below cast is due to the below line where 0th index of minimumCoins is accessed. */
+        @SuppressWarnings("assignment.type.incompatible") int @MinLen(1)[] minimumCoins = new int[amount + 1];
 
-        minimumCoins[0] = 0;/* This Line gives cast.unsafe warning because the compiler is unable to statically verify that the length of the array "minimumCoins" is greater than 1*/
+        minimumCoins[0] = 0;
 
         for (int i = 1; i <= amount; i++) {
             minimumCoins[i] = Integer.MAX_VALUE;
